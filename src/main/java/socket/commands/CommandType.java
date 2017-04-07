@@ -6,6 +6,5 @@ package socket.commands;
 public enum CommandType {
     ADD_JOBS,
     REQUEST_JOB,
-    RESPONSE_JOB,
-    QUIT
+    RESPONSE_JOB
 }

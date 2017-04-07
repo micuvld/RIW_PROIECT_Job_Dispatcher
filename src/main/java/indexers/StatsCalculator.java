@@ -2,7 +2,6 @@ package indexers;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
-import indexers.reduce.FileApparition;
 import mongo.MongoConnector;
 import org.bson.Document;
 

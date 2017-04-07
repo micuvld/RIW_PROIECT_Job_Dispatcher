@@ -8,6 +8,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
+ * Used to create specific commands,
+ * depending on the command type found in json
  * Created by vlad on 29.03.2017.
  */
 public class CommandFactory {
@@ -17,7 +19,6 @@ public class CommandFactory {
         commandClassesMap.put(CommandType.ADD_JOBS, AddJobsCommand.class);
         commandClassesMap.put(CommandType.REQUEST_JOB, RequestJobCommand.class);
         commandClassesMap.put(CommandType.RESPONSE_JOB, ResponseJobCommand.class);
-        //commandClassesMap.put(CommandType.QUIT, )
     }
 
     public static AbstractCommand createCommand(String command) throws IOException {

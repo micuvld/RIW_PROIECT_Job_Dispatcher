@@ -6,9 +6,7 @@ import indexers.WordSieve;
 import indexers.reduce.FileApparition;
 import mongo.MongoConnector;
 import org.bson.Document;
-import utils.porter.Porter;
 
-import java.io.File;
 import java.util.*;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -30,8 +28,7 @@ public class SearchWorker {
      * @return
      *  List of files, ordered by rank
      */
-    public List<String> rankedSearch(String interogation) {
-        List<String> results = new ArrayList<>();
+    public List<DocumentScore> rankedSearch(String interogation) {
         List<FileApparition> filesOfInterest = booleanSearch(interogation);
 
         List<String> tokens = tokenizeInterogation(interogation);
@@ -60,13 +57,7 @@ public class SearchWorker {
 
         Collections.sort(documentScores);
 
-
-        for (DocumentScore documentScore : documentScores) {
-            results.add(documentScore.getFileName());
-            System.out.println(documentScore.getFileName() + ": " + documentScore.getScore());
-        }
-
-        return results;
+        return documentScores;
     }
 
     private List<FileApparition> booleanSearch(String interogation) {
@@ -120,8 +111,6 @@ public class SearchWorker {
     }
 
     private double calculateTf(String token, FileApparition fileApparition) {
-        Document indexedFile = indexedFilesCollection.find(new Document("file", fileApparition.getFile())).first();
-
         MongoCollection<Document> directIndexMap = MongoConnector.getCollection("RIW", "directIndexMap");
         Document directIndexMapEntry =  directIndexMap.find(new Document("token", token)).first();
 
@@ -133,7 +122,7 @@ public class SearchWorker {
                         "{ token: \"" + token + "\"}" +
                         "{ file: \"" + fileApparition.getFile() + "\"}]}")).first();
 
-        return (double)((Integer)tokenDocument.get("count")) / (Integer)indexedFile.get("count");
+        return (double)((Integer)tokenDocument.get("count")) / fileApparition.getCount();
     }
 
     private double calculateQueryTf(String token, List<String> queryTokens) {

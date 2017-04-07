@@ -9,17 +9,16 @@ import java.util.List;
 /**
  * Created by vlad on 30.03.2017.
  */
-public class Reducer implements IWorker {
-    List<String> filesToReduce;
-
+public class Reducer extends AbstractWorker {
     public Reducer(List<String> filesToReduce) {
-        this.filesToReduce = filesToReduce;
+        super(filesToReduce);
     }
+
     @Override
     public void work() throws IOException {
         DirectIndexer directIndexer = new DirectIndexer();
 
-        for (String file : filesToReduce) {
+        for (String file : targetsToProcess) {
             directIndexer.reduceFile(file);
         }
     }

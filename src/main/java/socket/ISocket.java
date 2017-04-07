@@ -3,6 +3,7 @@ package socket;
 import java.io.IOException;
 
 /**
+ *
  * Created by vlad on 29.03.2017.
  */
 public interface ISocket {

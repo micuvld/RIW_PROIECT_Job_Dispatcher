@@ -56,7 +56,7 @@ public class WorkerClientSocket extends AbstractSocket {
 
                 try {
                     mapper.work();
-                    setResultedTargets(mapper.getOutFilesPath(), job);
+                    setResultedTargets(mapper.getOutputTargets(), job);
                     return true;
                 } catch (IOException e) {
                     System.out.println("Failed to MAP files!");
@@ -80,7 +80,7 @@ public class WorkerClientSocket extends AbstractSocket {
 
                 try {
                     sorter.work();
-                    setResultedTargets(sorter.getOutFilesPath(), job);
+                    setResultedTargets(sorter.getOutputTargets(), job);
                     return true;
                 } catch (IOException e) {
                     System.out.println("Failed to SORT files");

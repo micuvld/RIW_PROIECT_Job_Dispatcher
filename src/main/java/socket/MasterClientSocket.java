@@ -8,6 +8,7 @@ import job.JobState;
 import job.JobType;
 import mongo.MongoConnector;
 import org.bson.Document;
+import search.DocumentScore;
 import search.SearchWorker;
 import socket.commands.AddJobsCommand;
 import utils.MenuOption;
@@ -22,6 +23,7 @@ import java.util.Scanner;
  * Created by vlad on 28.03.2017.
  */
 public class MasterClientSocket extends AbstractSocket {
+    private final int SEARCH_DOCUMENTS_NUMBER_LIMIT = 10;
     List<Job> sentJobs = new ArrayList<>();
     List<Job> failedJobs = new ArrayList<>();
     List<Job> succeededJobs = new ArrayList<>();
@@ -54,7 +56,8 @@ public class MasterClientSocket extends AbstractSocket {
                 String searchQuery = readQuery();
                 SearchWorker searchWorker = new SearchWorker();
 
-                System.out.println(searchWorker.rankedSearch(searchQuery));
+                List<DocumentScore> documentScores = searchWorker.rankedSearch(searchQuery);
+                printFirstDocuments(documentScores, SEARCH_DOCUMENTS_NUMBER_LIMIT);
                 break;
             case EXIT:
                 break;
@@ -91,7 +94,6 @@ public class MasterClientSocket extends AbstractSocket {
         }
 
         Job job;
-        List<Job> jobList = new ArrayList<>();
 
         AddJobsCommand addJobsCommand = new AddJobsCommand();
         for (String path : pathsList) {
@@ -110,6 +112,35 @@ public class MasterClientSocket extends AbstractSocket {
     public void processFeedback(String command) throws IOException {
         System.out.println(command);
         processCommand(command);
+    }
+
+    public void processJobResponse(Job job) {
+        printJobsStats();
+        addJobToMonitoringList(job);
+
+        switch (job.getJobType()) {
+            case MAP:
+                sendJob(job, JobType.REDUCE_DIRECT_INDEX);
+                break;
+            case REDUCE_DIRECT_INDEX:
+                if (sentJobsAreDone()) {
+                    sendCollectionsToSort();
+                }
+                break;
+            case SORT:
+                sendJob(job, JobType.REDUCE_INVERTED_INDEX);
+                break;
+            case REDUCE_INVERTED_INDEX:
+                if (sentJobsAreDone()) {
+                    sendFilesForNormCalculation();
+                }
+                break;
+            case CALCULATE_NORMS:
+                if (sentJobsAreDone()) {
+                    endIndexing();
+                }
+                break;
+        }
     }
 
     public void addJobToMonitoringList(Job job) {
@@ -196,6 +227,17 @@ public class MasterClientSocket extends AbstractSocket {
         } catch (IOException e) {
             System.out.println("Failed to send files for norms!");
             e.printStackTrace();
+        }
+    }
+
+    public void printFirstDocuments(List<DocumentScore> documentScores, int numberOfDocuments) {
+        int resultCount = 0;
+        for (DocumentScore documentScore : documentScores) {
+            if (resultCount == 10) {
+                break;
+            }
+            System.out.println(documentScore.getFileName() + ": " + documentScore.getScore());
+            resultCount++;
         }
     }
 }

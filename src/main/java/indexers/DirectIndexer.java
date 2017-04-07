@@ -4,20 +4,18 @@ package indexers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.mongodb.MongoClient;
+import indexers.map.MappedFile;
 import indexers.reduce.DirectIndexEntry;
 import indexers.reduce.FileApparition;
 import job.JobType;
-import indexers.map.MappedFile;
 import mongo.MongoConnector;
-import org.bson.Document;
-import utils.porter.Porter;
 
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by vlad on 22.02.2017.
@@ -54,6 +52,10 @@ public class DirectIndexer {
 
         String outPath = writeIndex(path);
         return outPath;
+    }
+
+    public boolean isValid(char c) {
+        return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
     }
 
     private void mapWord(String word) {

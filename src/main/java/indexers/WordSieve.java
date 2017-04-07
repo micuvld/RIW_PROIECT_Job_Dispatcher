@@ -13,15 +13,15 @@ import java.util.List;
  * Created by vlad on 06.04.2017.
  */
 public class WordSieve {
-    private final static String STOP_WORDS_FILE = "resources/stop_words.txt";
-    private final static String EXCEPTION_WORDS_FILE = "resources/exception_words.txt";
+    private final static String STOP_WORDS_FILE = "/home/vlad/workspace/RIW_PROIECT/JobDispatcher/stop_words.txt";
+    private final static String EXCEPTION_WORDS_FILE = "/home/vlad/workspace/RIW_PROIECT/JobDispatcher/exception_words.txt";
 
     private final static List<String> stopWords = new ArrayList<String>();
     private final static List<String> exceptionWords = new ArrayList<String>();
     private final static Porter porter = new Porter();
 
     static {
-        //populateExceptionAndStopLists();
+        populateExceptionAndStopLists();
     }
 
     public static boolean isException(String word) {

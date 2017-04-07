@@ -5,7 +5,6 @@ package job;
  */
 public enum JobState {
     PENDING,
-    PROCESSING,
     COMPLETED,
     ABORTED
 }

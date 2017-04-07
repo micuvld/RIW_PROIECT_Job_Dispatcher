@@ -18,8 +18,6 @@ import java.util.*;
  */
 public class InverseIndexer {
     private final String INDEX_FILES_PATH = "/home/vlad/workspace/RIW_PROIECT/outdir/";
-//    private final int PARTITION_SIZE = 2;
-//    private int index_file_count = 0;
     private long totalNumberOfFiles = 0;
 
     public InverseIndexer() {
@@ -54,7 +52,7 @@ public class InverseIndexer {
         int numberOfFiles = 0;
         for (DirectIndexEntry directIndexEntry : directIndexEntries) {
             if (!latestToken.equals(directIndexEntry.getToken())) {
-                invertedIndexEntry.setIdf((double) totalNumberOfFiles / numberOfFiles);
+                invertedIndexEntry.setIdf(Math.log((double) totalNumberOfFiles / numberOfFiles));
                 writeInverseIndexToMongo(invertedIndexEntry, outCollectionName);
                 invertedIndexEntry = new InvertedIndexEntry(directIndexEntry.getToken());
                 latestToken = directIndexEntry.getToken();
@@ -64,7 +62,7 @@ public class InverseIndexer {
             numberOfFiles++;
         }
 
-        invertedIndexEntry.setIdf((double) totalNumberOfFiles / numberOfFiles);
+        invertedIndexEntry.setIdf(Math.log((double) totalNumberOfFiles / numberOfFiles));
         writeInverseIndexToMongo(invertedIndexEntry, outCollectionName);
 
         return outCollectionName;
