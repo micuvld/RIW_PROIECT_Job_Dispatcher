@@ -27,6 +27,11 @@ public class StatsCalculator {
                 "RIW", "invertedIndexMap");
     }
 
+    public static void calculateTf() {
+
+    }
+
+
     public void calculateNorms(List<String> targetFiles) {
         for (String file : targetFiles) {
             calculateNorm(file);
@@ -78,5 +83,14 @@ public class StatsCalculator {
     private void writeNorm(String fileName, double norm) {
         Document normDocument = new Document("norm", norm);
         indexedFilesCollection.updateOne(eq("file", fileName), new Document("$set", normDocument));
+    }
+
+    public static double getIdf(String token) {
+        Document invertedIndexCollectionEntry = inverseIndexMapCollection.find(eq("token", token)).first();
+        MongoCollection<Document> invertedIndexCollection = MongoConnector.getCollection(
+                "InvertedIndex", invertedIndexCollectionEntry.getString("collection"));
+        Document invertedIndex = invertedIndexCollection.find(eq("token", token)).first();
+
+        return invertedIndex.getDouble("idf");
     }
 }

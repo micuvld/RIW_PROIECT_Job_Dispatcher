@@ -10,6 +10,8 @@ public class FileApparition {
     String file;
     @JsonProperty("count")
     int count;
+    @JsonProperty("norm")
+    double norm;
 
     public String getFile() {
         return file;
@@ -17,6 +19,16 @@ public class FileApparition {
 
     public int getCount() {
         return count;
+    }
+
+    public double getNorm() {
+        return norm;
+    }
+
+    public FileApparition(String file, int count, double norm) {
+        this.file = file;
+        this.count = count;
+        this.norm = norm;
     }
 
     public FileApparition(String file, int count) {

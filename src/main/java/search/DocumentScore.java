@@ -15,9 +15,17 @@ public class DocumentScore implements Comparable{
         return score;
     }
 
+    public void setScore(Double score) {
+        this.score = score;
+    }
+
     public DocumentScore(String fileName, Double score) {
         this.fileName = fileName;
         this.score = score;
+    }
+
+    public void addToScore(double scoreToAdd) {
+        this.score += scoreToAdd;
     }
 
     @Override
