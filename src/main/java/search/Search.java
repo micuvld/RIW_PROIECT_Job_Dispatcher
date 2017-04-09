@@ -63,7 +63,7 @@ public class Search {
 
     private List<IndexedFile> booleanSearch(String interogation) {
         List<String> tokens = tokenizeInterogation(interogation);
-        List<IndexedFile> files = new ArrayList<IndexedFile>();
+        List<IndexedFile> files = new ArrayList<>();
 
         for (String token : tokens) {
             files = processToken(files, token);
@@ -72,6 +72,15 @@ public class Search {
         return files;
     }
 
+    /**
+     * Splits the interogation into tokens
+     * - follows the same processing as the indexer:
+     *      - exception
+     *      - stop word
+     *      - canonical form
+     * @param interogation
+     * @return
+     */
     private List<String> tokenizeInterogation(String interogation) {
         StringBuilder token = new StringBuilder();
         List<String> tokens = new ArrayList<>();
@@ -90,6 +99,18 @@ public class Search {
 
         tokens.add(token.toString());
         return tokens;
+    }
+
+    private void addToken(String token, List<String> tokens) {
+        if (!WordSieve.isException(token)) {
+            if (WordSieve.isStopWord(token)) {
+                return;
+            }
+
+            token = WordSieve.toCanonicalForm(token);
+        }
+
+        tokens.add(token);
     }
 
     public List<DocumentScore> initScores(List<IndexedFile> filesOfInterest) {
@@ -114,6 +135,9 @@ public class Search {
     private double calculateTf(String token, IndexedFile indexedFile) {
         MongoCollection<Document> directIndexMap = MongoConnector.getCollection("RIW", "directIndexMap");
         Document directIndexMapEntry =  directIndexMap.find(new Document("token", token)).first();
+        if (directIndexMapEntry == null) {
+            return 0;
+        }
 
         MongoCollection<Document> directIndexCollection = MongoConnector.getCollection("DirectIndex",
                 (String)directIndexMapEntry.get("collection"));
@@ -144,18 +168,6 @@ public class Search {
         return (double) tokenCount / totalCount;
     }
 
-    private void addToken(String token, List<String> tokens) {
-        if (!WordSieve.isException(token)) {
-            if (WordSieve.isStopWord(token)) {
-                return;
-            }
-
-            token = WordSieve.toCanonicalForm(token);
-        }
-
-        tokens.add(token);
-    }
-
     /**
      * Removes any query operators bound to the tokens
      * @param tokens
@@ -183,6 +195,9 @@ public class Search {
         List<IndexedFile> fileApparitions = new ArrayList<>();
         MongoCollection<Document> collection = MongoConnector.getCollection("RIW", "invertedIndexMap");
         Document indexPointer = collection.find(new Document("token", word)).first();
+        if (indexPointer == null) {
+            return new ArrayList<>();
+        }
 
         MongoCollection<Document> indexCollection = MongoConnector.getCollection("InvertedIndex",
                 (String)(indexPointer.get("collection")));

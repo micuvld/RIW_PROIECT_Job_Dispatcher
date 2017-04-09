@@ -15,14 +15,14 @@ import static com.mongodb.client.model.Filters.eq;
 public class StatsCalculator {
     public static MongoCollection<Document> indexedFilesCollection;
     public static MongoCollection<Document> directIndexMapCollection;
-    public static MongoCollection<Document> inverseIndexMapCollection;
+    public static MongoCollection<Document> invertedIndexMapCollection;
 
     public StatsCalculator() {
         indexedFilesCollection =  MongoConnector.getCollection(
                 "RIW", "indexedFiles");
         directIndexMapCollection =  MongoConnector.getCollection(
                 "RIW", "directIndexMap");
-        inverseIndexMapCollection =  MongoConnector.getCollection(
+        invertedIndexMapCollection =  MongoConnector.getCollection(
                 "RIW", "invertedIndexMap");
     }
 
@@ -80,7 +80,11 @@ public class StatsCalculator {
     }
 
     public static double getIdf(String token) {
-        Document invertedIndexCollectionEntry = inverseIndexMapCollection.find(eq("token", token)).first();
+        Document invertedIndexCollectionEntry = invertedIndexMapCollection.find(eq("token", token)).first();
+        if (invertedIndexCollectionEntry == null) {
+            return 0;
+        }
+
         MongoCollection<Document> invertedIndexCollection = MongoConnector.getCollection(
                 "InvertedIndex", invertedIndexCollectionEntry.getString("collection"));
         Document invertedIndex = invertedIndexCollection.find(eq("token", token)).first();
