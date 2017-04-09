@@ -1,6 +1,4 @@
-package socket.commands;
-
-import java.io.IOException;
+package commands;
 
 /**
  * Created by vlad on 29.03.2017.

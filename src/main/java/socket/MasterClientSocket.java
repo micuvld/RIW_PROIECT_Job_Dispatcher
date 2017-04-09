@@ -9,10 +9,12 @@ import job.JobType;
 import mongo.MongoConnector;
 import org.bson.Document;
 import search.DocumentScore;
-import search.SearchWorker;
-import socket.commands.AddJobsCommand;
+import search.Search;
+import commands.AddJobsCommand;
+import utils.Configs;
 import utils.MenuOption;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -23,14 +25,13 @@ import java.util.Scanner;
  * Created by vlad on 28.03.2017.
  */
 public class MasterClientSocket extends AbstractSocket {
-    private final int SEARCH_DOCUMENTS_NUMBER_LIMIT = 10;
-    List<Job> sentJobs = new ArrayList<>();
-    List<Job> failedJobs = new ArrayList<>();
-    List<Job> succeededJobs = new ArrayList<>();
+    private List<Job> sentJobs = new ArrayList<>();
+    private List<Job> failedJobs = new ArrayList<>();
+    private List<Job> succeededJobs = new ArrayList<>();
 
-    boolean processingInProgress = true;
+    private boolean processingInProgress = true;
 
-    public MasterClientSocket(String hostname, int port) throws IOException {
+    public MasterClientSocket(String hostname, int port) {
         super(hostname,port);
         socketType = SocketType.MASTER;
     }
@@ -38,42 +39,44 @@ public class MasterClientSocket extends AbstractSocket {
     public void work(String folderPath) throws IOException {
         MenuOption option = readOption();
         System.out.println(option);
+
         switch (option) {
             case INDEX_FILES:
                 processingInProgress = true;
                 cleanDatabases();
+                createTempDir();
                 sendFilesToMap(folderPath);
 
-                while(processingInProgress) {
+                while (processingInProgress) {
                     System.out.println("Waiting for feedback...");
 
                     String command = getFeedback();
                     processFeedback(command);
                 }
+
+                System.out.println("Finished indexing files!");
+                System.out.println("Exiting...");
+                socket.close();
                 break;
             case SEARCH:
-                processingInProgress = true;
-                String searchQuery = readQuery();
-                SearchWorker searchWorker = new SearchWorker();
+                Search search = new Search();
+                while(true) {
+                    String searchQuery = readQuery();
+                    if(searchQuery.equals("0")) {
+                        socket.close();
+                        return;
+                    }
 
-                List<DocumentScore> documentScores = searchWorker.rankedSearch(searchQuery);
-                printFirstDocuments(documentScores, SEARCH_DOCUMENTS_NUMBER_LIMIT);
-                break;
+                    List<DocumentScore> documentScores = search.rankedSearch(searchQuery);
+                    printFirstDocuments(documentScores, Configs.SEARCH_DOCUMENTS_NUMBER_LIMIT);
+                }
             case EXIT:
-                break;
+                System.out.println("Exiting...");
+                socket.close();
+                return;
             default:
                 System.out.println("Wrong option");
         }
-
-
-    }
-
-    public MenuOption readOption() {
-        System.out.println("1. Index files\n2. Search\n3.Exit");
-
-        Scanner scanner = new Scanner(System.in);
-
-        return MenuOption.values()[scanner.nextInt() - 1];
     }
 
     public void cleanDatabases() {
@@ -82,28 +85,22 @@ public class MasterClientSocket extends AbstractSocket {
         MongoConnector.dropDatabase("InvertedIndex");
     }
 
-    public void sendFilesToMap(String folderPath) throws IOException {
-        List<String> pathsList = new ArrayList<>();
-        DirectoryParser directoryParser = new DirectoryParser();
-
-        try {
-            directoryParser.parseDirectory(Paths.get(folderPath), pathsList);
-        } catch (IOException e) {
-            System.out.println("Error when parsing directory!");
-            e.printStackTrace();
-        }
-
-        Job job;
-
-        AddJobsCommand addJobsCommand = new AddJobsCommand();
-        for (String path : pathsList) {
-            job = new Job(JobType.MAP, path, JobState.PENDING);
-            addJobsCommand.addJobGenerateIndex(job);
-            sentJobs.add(job);
-        }
-
-        this.writeAsJson(addJobsCommand);
+    public void createTempDir() {
+        new File(Configs.TEMPDIR_PATH).mkdir();
     }
+
+    public MenuOption readOption() {
+        System.out.println("1. Index files\n2. Search\n3. Exit");
+        Scanner scanner = new Scanner(System.in);
+        return MenuOption.values()[scanner.nextInt() - 1];
+    }
+
+    public String readQuery() {
+        System.out.print("\nSearch (0 to exit): ");
+        Scanner scanner = new Scanner(System.in);
+        return scanner.nextLine();
+    }
+
 
     public String getFeedback() throws IOException {
         return readSocketLines();
@@ -169,13 +166,27 @@ public class MasterClientSocket extends AbstractSocket {
         }
     }
 
-    public boolean sentJobsAreDone() {
-        return sentJobs.size() == succeededJobs.size();
-    }
+    public void sendFilesToMap(String folderPath) throws IOException {
+        List<String> pathsList = new ArrayList<>();
+        DirectoryParser directoryParser = new DirectoryParser();
 
-    public void printJobsStats() {
-        System.out.println("Sent jobs: " + sentJobs.size());
-        System.out.println("Succeeded jobs: " + succeededJobs.size());
+        try {
+            directoryParser.parseDirectory(Paths.get(folderPath), pathsList);
+        } catch (IOException e) {
+            System.out.println("Error when parsing directory!");
+            e.printStackTrace();
+        }
+
+        Job job;
+
+        AddJobsCommand addJobsCommand = new AddJobsCommand();
+        for (String path : pathsList) {
+            job = new Job(JobType.MAP, path, JobState.PENDING);
+            addJobsCommand.addJobGenerateIndex(job);
+            sentJobs.add(job);
+        }
+
+        this.writeAsJson(addJobsCommand);
     }
 
     public void sendCollectionsToSort() {
@@ -195,15 +206,6 @@ public class MasterClientSocket extends AbstractSocket {
             System.out.println("Failed to send collections to sort!");
             e.printStackTrace();
         }
-    }
-
-    public void endIndexing() {
-        processingInProgress = false;
-    }
-
-    public String readQuery() {
-        Scanner scanner = new Scanner(System.in);
-        return scanner.nextLine();
     }
 
     public void sendFilesForNormCalculation() {
@@ -230,10 +232,23 @@ public class MasterClientSocket extends AbstractSocket {
         }
     }
 
+    public boolean sentJobsAreDone() {
+        return sentJobs.size() == succeededJobs.size();
+    }
+
+    public void endIndexing() {
+        processingInProgress = false;
+    }
+
+    public void printJobsStats() {
+        System.out.println("Sent jobs: " + sentJobs.size());
+        System.out.println("Succeeded jobs: " + succeededJobs.size());
+    }
+
     public void printFirstDocuments(List<DocumentScore> documentScores, int numberOfDocuments) {
         int resultCount = 0;
         for (DocumentScore documentScore : documentScores) {
-            if (resultCount == 10) {
+            if (resultCount == numberOfDocuments) {
                 break;
             }
             System.out.println(documentScore.getFileName() + ": " + documentScore.getScore());

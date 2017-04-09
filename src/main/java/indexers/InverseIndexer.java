@@ -9,6 +9,7 @@ import indexers.reduce.InvertedIndexEntry;
 import indexers.reduce.DirectIndexEntry;
 import mongo.MongoConnector;
 import org.bson.Document;
+import utils.Configs;
 
 import java.io.*;
 import java.util.*;
@@ -17,7 +18,7 @@ import java.util.*;
  * Created by vlad on 08.03.2017.
  */
 public class InverseIndexer {
-    private final String INDEX_FILES_PATH = "/home/vlad/workspace/RIW_PROIECT/outdir/";
+    private final String INDEX_FILES_PATH = Configs.TEMPDIR_PATH;
     private long totalNumberOfFiles = 0;
 
     public InverseIndexer() {
@@ -54,6 +55,7 @@ public class InverseIndexer {
             if (!latestToken.equals(directIndexEntry.getToken())) {
                 invertedIndexEntry.setIdf(Math.log((double) totalNumberOfFiles / numberOfFiles));
                 writeInverseIndexToMongo(invertedIndexEntry, outCollectionName);
+
                 invertedIndexEntry = new InvertedIndexEntry(directIndexEntry.getToken());
                 latestToken = directIndexEntry.getToken();
                 numberOfFiles = 0;

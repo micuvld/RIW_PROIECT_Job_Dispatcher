@@ -1,16 +1,15 @@
 package socket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import socket.commands.AbstractCommand;
-import socket.commands.CommandFactory;
-import socket.commands.UnableToProcessCommandException;
+import commands.AbstractCommand;
+import commands.CommandFactory;
+import commands.UnableToProcessCommandException;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
-import java.util.Objects;
 
 /**
  * Abstract class that defines a generic socket

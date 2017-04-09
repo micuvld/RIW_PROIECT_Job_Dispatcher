@@ -10,18 +10,18 @@ import java.util.List;
 /**
  * Created by vlad on 01.04.2017.
  */
-public class InvertedIndexReducer implements IWorker{
-    List<String> filesToReduce;
-
+public class InvertedIndexReducer extends AbstractWorker{
     public InvertedIndexReducer(List<String> filesToReduce) {
-        this.filesToReduce = filesToReduce;
+        super(filesToReduce);
     }
+
     @Override
     public void work() throws IOException {
         InverseIndexer inverseIndexer = new InverseIndexer();
 
-        for (String file : filesToReduce) {
+        for (String file : targetsToProcess) {
             inverseIndexer.reduce(file);
+            outputTargets.add(file);
         }
     }
 }

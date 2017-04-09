@@ -20,6 +20,7 @@ public class Reducer extends AbstractWorker {
 
         for (String file : targetsToProcess) {
             directIndexer.reduceFile(file);
+            outputTargets.add(file);
         }
     }
 }

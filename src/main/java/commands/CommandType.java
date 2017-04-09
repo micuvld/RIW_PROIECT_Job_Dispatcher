@@ -1,4 +1,4 @@
-package socket.commands;
+package commands;
 
 /**
  * Created by vlad on 28.03.2017.

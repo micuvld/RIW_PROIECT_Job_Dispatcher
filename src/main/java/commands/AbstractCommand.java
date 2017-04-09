@@ -1,9 +1,7 @@
-package socket.commands;
+package commands;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import socket.AbstractSocket;
 import socket.ISocket;
 
 /**

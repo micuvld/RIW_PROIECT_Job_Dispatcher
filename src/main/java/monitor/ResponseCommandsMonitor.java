@@ -1,12 +1,9 @@
 package monitor;
 
-import socket.AbstractSocket;
 import socket.ISocket;
-import socket.commands.AbstractCommand;
-import socket.commands.RequestJobCommand;
+import commands.AbstractCommand;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**

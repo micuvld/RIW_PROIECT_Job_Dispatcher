@@ -1,11 +1,7 @@
-package socket.commands;
+package commands;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import job.Job;
-import socket.AbstractSocket;
 import socket.ISocket;
-import socket.JobBoardSocket;
 import socket.WorkerServerSocket;
 
 import java.io.IOException;

@@ -9,6 +9,7 @@ import indexers.reduce.DirectIndexEntry;
 import indexers.reduce.FileApparition;
 import job.JobType;
 import mongo.MongoConnector;
+import utils.Configs;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -21,26 +22,22 @@ import java.util.Map;
  * Created by vlad on 22.02.2017.
  */
 public class DirectIndexer {
-    private final String INDEX_DIRECTORY_PATH = "/home/vlad/workspace/RIW_PROIECT/outdir/";
+    private final String INDEX_DIRECTORY_PATH = Configs.TEMPDIR_PATH;
     private MappedFile mappedFile;
 
     private int fileWordCount = 0;
 
-    public DirectIndexer() {
-        //populateExceptionAndStopLists();
-    }
-
     public String mapFile(Path path) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path.toString()),
                 Charset.forName("UTF-8")));
-        mappedFile = new MappedFile(path.toString());
+        mappedFile = new MappedFile(getRelativeFilePath(path));
 
         StringBuilder word = new StringBuilder();
 
         int c;
         while((c = reader.read()) != -1) {
             char charC = (char)c;
-            if (Character.isLetter(charC)) {
+            if (isValid(charC)) {
                 word.append(charC);
             } else {
                 if (!word.toString().equals("")) {
@@ -50,8 +47,7 @@ public class DirectIndexer {
             }
         }
 
-        String outPath = writeIndex(path);
-        return outPath;
+        return writeIndex(path);
     }
 
     public boolean isValid(char c) {
@@ -71,13 +67,18 @@ public class DirectIndexer {
         fileWordCount++;
     }
 
-    public String generateOutPath(Path path, JobType jobType) {
+    public String generateMapFilePath(Path path) {
         return INDEX_DIRECTORY_PATH + JobType.MAP.name() + "-" + path.getFileName();
+    }
+
+    public String getRelativeFilePath(Path path) {
+        String stringPath = path.toString();
+        return stringPath.substring(Configs.WORKDIR_PATH.length(), stringPath.length());
     }
 
     public String writeIndex(Path inPath) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        String outPath = generateOutPath(inPath, JobType.MAP);
+        String outPath = generateMapFilePath(inPath);
         try {
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
@@ -87,7 +88,7 @@ public class DirectIndexer {
             e.printStackTrace();
         }
 
-        MongoConnector.writeToCollection(new FileApparition(inPath.toString(), fileWordCount), "RIW",
+        MongoConnector.writeToCollection(new FileApparition(getRelativeFilePath(inPath), fileWordCount), "RIW",
                 "indexedFiles");
         return outPath;
     }
@@ -119,6 +120,7 @@ public class DirectIndexer {
         DirectIndexEntry directIndexEntry = new DirectIndexEntry(file, token, count);
         String database = "DirectIndex";
         String mapDatabase = "RIW";
+
         String collection = token.charAt(0) + "DirectIndex";
         String directIndexMapCollection = "directIndexMap";
 

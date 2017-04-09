@@ -1,16 +1,11 @@
 package socket;
 
 import board.JobBoard;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import job.Job;
 import monitor.ResponseCommandsMonitor;
-import socket.commands.*;
+import commands.*;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -34,6 +29,7 @@ public class MasterServerSocket extends AbstractSocket implements Runnable{
         new Thread(new ResponseCommandsMonitor(responseCommands, this)).start();
     }
 
+    @SuppressWarnings("Duplicates")
     @Override
     public void run() {
         while (true) {

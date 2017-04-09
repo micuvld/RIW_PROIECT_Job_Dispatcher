@@ -9,6 +9,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.CreateCollectionOptions;
 import org.bson.Document;
+import utils.Configs;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,16 +24,10 @@ public class MongoConnector {
 
     public static MongoClient getClient() {
         if (mongoClient == null) {
-            mongoClient = new MongoClient("localhost", 27017);
+            mongoClient = new MongoClient(Configs.MONGO_HOSTNAME, Integer.parseInt(Configs.MONGO_PORT));
         }
 
         return mongoClient;
-    }
-
-    public static void cleanCollection(String databaseName, String collectionName) {
-        MongoDatabase database = getClient().getDatabase(databaseName);
-        database.getCollection(collectionName).drop();
-        database.createCollection(collectionName);
     }
 
     public static void writeToCollection(Object objectToWrite, String databaseName, String collectionName) throws JsonProcessingException {

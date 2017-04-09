@@ -26,11 +26,6 @@ public class StatsCalculator {
                 "RIW", "invertedIndexMap");
     }
 
-    public static void calculateTf() {
-
-    }
-
-
     public void calculateNorms(List<String> targetFiles) {
         for (String file : targetFiles) {
             calculateNorm(file);
@@ -90,6 +85,11 @@ public class StatsCalculator {
                 "InvertedIndex", invertedIndexCollectionEntry.getString("collection"));
         Document invertedIndex = invertedIndexCollection.find(eq("token", token)).first();
 
-        return invertedIndex.getDouble("idf");
+        if (invertedIndex != null) {
+            return invertedIndex.getDouble("idf");
+        } else {
+            //word not found in database;
+            return 0;
+        }
     }
 }

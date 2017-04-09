@@ -1,15 +1,11 @@
 package socket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import indexers.StatsCalculator;
 import job.Job;
 import job.JobState;
-import socket.commands.RequestJobCommand;
-import socket.commands.ResponseJobCommand;
-import workers.InvertedIndexReducer;
-import workers.Mapper;
-import workers.Reducer;
-import workers.Sorter;
+import commands.RequestJobCommand;
+import commands.ResponseJobCommand;
+import workers.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -48,67 +44,19 @@ public class WorkerClientSocket extends AbstractSocket {
 
     private boolean processJob(Job job) {
         List<String> targetsToProcess = job.getTargets();
+        AbstractWorker worker = WorkerFactory.instantiateWorker(
+                job.getJobType(), targetsToProcess
+        );
 
-        switch(job.getJobType()){
-            case MAP:
-                System.out.println("MAP JOB FOR: " + targetsToProcess);
-                Mapper mapper = new Mapper(targetsToProcess);
-
-                try {
-                    mapper.work();
-                    setResultedTargets(mapper.getOutputTargets(), job);
-                    return true;
-                } catch (IOException e) {
-                    System.out.println("Failed to MAP files!");
-                    return false;
-                }
-            case REDUCE_DIRECT_INDEX:
-                System.out.println("REDUCE_DIRECT_INDEX JOB FOR: " + targetsToProcess);
-                Reducer reducer = new Reducer(targetsToProcess);
-
-                try {
-                    reducer.work();
-                    return true;
-                } catch (IOException e) {
-                    System.out.println("Failed to REDUCE_DIRECT_INDEX files");
-                    e.printStackTrace();
-                    return false;
-                }
-            case SORT:
-                System.out.println("SORT JOB FOR: " + targetsToProcess);
-                Sorter sorter = new Sorter(targetsToProcess);
-
-                try {
-                    sorter.work();
-                    setResultedTargets(sorter.getOutputTargets(), job);
-                    return true;
-                } catch (IOException e) {
-                    System.out.println("Failed to SORT files");
-                    e.printStackTrace();
-                    return false;
-                }
-            case REDUCE_INVERTED_INDEX:
-                System.out.println("REDUCE_INVERSED_INDEX JOB FOR: " + targetsToProcess);
-                InvertedIndexReducer invertedIndexReducer = new InvertedIndexReducer(targetsToProcess);
-
-                try {
-                    invertedIndexReducer.work();
-                    return true;
-                } catch (IOException e) {
-                    System.out.println("Failed to REDUCE_INVERSED_INDEX files");
-                    e.printStackTrace();
-                    return false;
-                }
-            case CALCULATE_NORMS:
-                System.out.println("CALCULATE_NORMS JOB FOR: " + targetsToProcess);
-                StatsCalculator statsCalculator = new StatsCalculator();
-                statsCalculator.calculateNorms(targetsToProcess);
-
-                System.out.println("Finished calculating norm for " + targetsToProcess);
-                return true;
+        try {
+            System.out.println(job.getJobType() + " JOB FOR: " + targetsToProcess);
+            worker.work();
+            setResultedTargets(worker.getOutputTargets(), job);
+            return true;
+        } catch (IOException e) {
+            System.out.println("Failed to" + job.getJobType() + " files!");
+            return false;
         }
-
-        return false;
     }
 
     /**
@@ -118,7 +66,7 @@ public class WorkerClientSocket extends AbstractSocket {
      * @param job
      */
     private void setResultedTargets(List<String> outFilesPaths, Job job) {
-        job.setTarget(outFilesPaths.get(0));
+        job.setTargets(outFilesPaths);
     }
 
     private void sendResponse(Job job) throws IOException {

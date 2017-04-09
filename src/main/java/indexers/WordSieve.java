@@ -1,5 +1,6 @@
 package indexers;
 
+import utils.Configs;
 import utils.porter.Porter;
 
 import java.io.BufferedReader;
@@ -13,8 +14,8 @@ import java.util.List;
  * Created by vlad on 06.04.2017.
  */
 public class WordSieve {
-    private final static String STOP_WORDS_FILE = "/home/vlad/workspace/RIW_PROIECT/JobDispatcher/stop_words.txt";
-    private final static String EXCEPTION_WORDS_FILE = "/home/vlad/workspace/RIW_PROIECT/JobDispatcher/exception_words.txt";
+    private final static String STOP_WORDS_FILE = Configs.STOP_WORDS_LIST_PATH;
+    private final static String EXCEPTION_WORDS_FILE = Configs.EXCEPTIONS_LIST_PATH;
 
     private final static List<String> stopWords = new ArrayList<String>();
     private final static List<String> exceptionWords = new ArrayList<String>();

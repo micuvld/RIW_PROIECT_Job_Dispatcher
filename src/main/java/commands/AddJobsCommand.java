@@ -1,17 +1,14 @@
-package socket.commands;
+package commands;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import job.Job;
 import job.JobType;
-import socket.AbstractSocket;
 import socket.ISocket;
 import socket.MasterServerSocket;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by vlad on 28.03.2017.

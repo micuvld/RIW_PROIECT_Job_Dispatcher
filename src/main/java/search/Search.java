@@ -14,11 +14,11 @@ import static com.mongodb.client.model.Filters.eq;
 /**
  * Created by vlad on 09.03.2017.
  */
-public class SearchWorker {
+public class Search {
     public static MongoCollection<Document> indexedFilesCollection;
     public static StatsCalculator statsCalculator;
 
-    public SearchWorker() {
+    public Search() {
         indexedFilesCollection =  MongoConnector.getCollection("RIW", "indexedFiles");
         statsCalculator = new StatsCalculator();
     }
@@ -122,7 +122,11 @@ public class SearchWorker {
                         "{ token: \"" + token + "\"}" +
                         "{ file: \"" + fileApparition.getFile() + "\"}]}")).first();
 
-        return (double)((Integer)tokenDocument.get("count")) / fileApparition.getCount();
+        if (tokenDocument != null) {
+            return (double) ((Integer) tokenDocument.get("count")) / fileApparition.getCount();
+        } else {
+            return 0;
+        }
     }
 
     private double calculateQueryTf(String token, List<String> queryTokens) {

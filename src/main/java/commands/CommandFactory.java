@@ -1,10 +1,9 @@
-package socket.commands;
+package commands;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**

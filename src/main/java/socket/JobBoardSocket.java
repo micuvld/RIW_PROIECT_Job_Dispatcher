@@ -4,6 +4,7 @@ import board.JobBoard;
 import board.TaskBoard;
 import com.mongodb.Mongo;
 import mongo.MongoConnector;
+import utils.Configs;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,29 +18,36 @@ import java.util.List;
  * Created by vlad on 28.03.2017.
  */
 public class JobBoardSocket{
-    ServerSocket serverSocket;
-    int port = 8080;
-    List<WorkerServerSocket> workers = new ArrayList<WorkerServerSocket>();
-    int workerId = 0;
-    MasterServerSocket masterServerSocket;
+    private ServerSocket serverSocket;
+    private int port = 8080;
 
-    JobBoard jobBoard;
+    private MasterServerSocket masterServerSocket;
+    private List<WorkerServerSocket> workers = new ArrayList<WorkerServerSocket>();
+    private int workerId = 0;
+
+    private JobBoard jobBoard;
 
     public JobBoardSocket() {
         try {
+            port = Integer.parseInt(Configs.JOB_BOARD_PORT);
             jobBoard = new TaskBoard();
             serverSocket = new ServerSocket(port);
 
             System.out.println("Server initiated at " + serverSocket.getInetAddress() + ":" + port);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-            while(true) {
+    public void work() {
+        try {
+            while (true) {
                 System.out.println("Waiting for connections");
                 Socket clientSocket = serverSocket.accept();
 
                 addClient(clientSocket);
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -48,7 +56,7 @@ public class JobBoardSocket{
         BufferedReader socketReader = new BufferedReader(
                 new InputStreamReader(clientSocket.getInputStream(), "UTF-8"));
         String clientType = readSocketLine(socketReader);
-        System.out.println(clientType);
+
         if (clientType.equals("MASTER")) {
             System.out.println("Master connected!");
 
@@ -58,7 +66,7 @@ public class JobBoardSocket{
 
             Thread masterThread = new Thread(masterServerSocket);
             masterThread.start();
-        } else  if(clientType.equals("WORKER")){
+        } else if(clientType.equals("WORKER")){
             System.out.println("Worker" + workerId + " connected!");
 
             WorkerServerSocket workerSocket = new WorkerServerSocket(clientSocket, jobBoard, masterServerSocket);
@@ -80,9 +88,5 @@ public class JobBoardSocket{
     public String readSocketLine(BufferedReader socketReader) throws IOException {
         while(!(socketReader.readLine()).equals("START"));
         return socketReader.readLine();
-    }
-
-    public static void main(String args[]) {
-        JobBoardSocket jobBoardSocket = new JobBoardSocket();
     }
 }

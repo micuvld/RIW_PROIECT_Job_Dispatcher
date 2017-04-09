@@ -1,4 +1,4 @@
-package socket.commands;
+package commands;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

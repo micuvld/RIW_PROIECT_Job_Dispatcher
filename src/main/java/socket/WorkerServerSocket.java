@@ -1,15 +1,10 @@
 package socket;
 
 import board.JobBoard;
-import job.Job;
-import job.JobType;
-import socket.commands.*;
+import commands.*;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by vlad on 28.03.2017.
@@ -32,6 +27,7 @@ public class WorkerServerSocket extends AbstractSocket implements Runnable{
         this.masterSocket = masterSocket;
     }
 
+    @SuppressWarnings("Duplicates")
     @Override
     public void run() {
         System.out.println("Worker started");
