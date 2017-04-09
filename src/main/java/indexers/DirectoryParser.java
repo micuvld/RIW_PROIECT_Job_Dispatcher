@@ -20,7 +20,7 @@ public class DirectoryParser {
                 parseDirectory(entry, filesPaths);
             } else {
                 if (Utils.getFileExtension(entry.getFileName().toString()).equals("txt")) {
-                    filesPaths.add(entry.toString());
+                    filesPaths.add(Utils.getRelativeFilePath(entry));
                 }
             }
         }

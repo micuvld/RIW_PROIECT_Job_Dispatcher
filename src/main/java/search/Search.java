@@ -4,6 +4,7 @@ import com.mongodb.client.MongoCollection;
 import indexers.StatsCalculator;
 import indexers.WordSieve;
 import indexers.reduce.FileApparition;
+import indexers.reduce.IndexedFile;
 import mongo.MongoConnector;
 import org.bson.Document;
 
@@ -29,7 +30,7 @@ public class Search {
      *  List of files, ordered by rank
      */
     public List<DocumentScore> rankedSearch(String interogation) {
-        List<FileApparition> filesOfInterest = booleanSearch(interogation);
+        List<IndexedFile> filesOfInterest = booleanSearch(interogation);
 
         List<String> tokens = tokenizeInterogation(interogation);
         trimTokens(tokens);
@@ -60,9 +61,9 @@ public class Search {
         return documentScores;
     }
 
-    private List<FileApparition> booleanSearch(String interogation) {
+    private List<IndexedFile> booleanSearch(String interogation) {
         List<String> tokens = tokenizeInterogation(interogation);
-        List<FileApparition> files = new ArrayList<FileApparition>();
+        List<IndexedFile> files = new ArrayList<IndexedFile>();
 
         for (String token : tokens) {
             files = processToken(files, token);
@@ -91,10 +92,10 @@ public class Search {
         return tokens;
     }
 
-    public List<DocumentScore> initScores(List<FileApparition> filesOfInterest) {
+    public List<DocumentScore> initScores(List<IndexedFile> filesOfInterest) {
         List<DocumentScore> scores = new ArrayList<>();
 
-        for (FileApparition file : filesOfInterest) {
+        for (IndexedFile file : filesOfInterest) {
             scores.add(new DocumentScore(file.getFile(), 0.0));
         }
 
@@ -102,7 +103,7 @@ public class Search {
     }
 
 
-    private double calculateDocumentWeight(String term, FileApparition currentFile) {
+    private double calculateDocumentWeight(String term, IndexedFile currentFile) {
         return calculateTf(term, currentFile) * StatsCalculator.getIdf(term);
     }
 
@@ -110,7 +111,7 @@ public class Search {
         return calculateQueryTf(term, queryTokens) * StatsCalculator.getIdf(term);
     }
 
-    private double calculateTf(String token, FileApparition fileApparition) {
+    private double calculateTf(String token, IndexedFile indexedFile) {
         MongoCollection<Document> directIndexMap = MongoConnector.getCollection("RIW", "directIndexMap");
         Document directIndexMapEntry =  directIndexMap.find(new Document("token", token)).first();
 
@@ -120,10 +121,10 @@ public class Search {
         Document tokenDocument = directIndexCollection.find(Document.parse(
                 "{ $and:[" +
                         "{ token: \"" + token + "\"}" +
-                        "{ file: \"" + fileApparition.getFile() + "\"}]}")).first();
+                        "{ file: \"" + indexedFile.getFile() + "\"}]}")).first();
 
         if (tokenDocument != null) {
-            return (double) ((Integer) tokenDocument.get("count")) / fileApparition.getCount();
+            return (double) ((Integer) tokenDocument.get("count")) / indexedFile.getCount();
         } else {
             return 0;
         }
@@ -168,7 +169,7 @@ public class Search {
         }
     }
 
-    private List<FileApparition> processToken(List<FileApparition> currentFilesList, String token) {
+    private List<IndexedFile> processToken(List<IndexedFile> currentFilesList, String token) {
         return reunion(currentFilesList, getFileApparitions(token));
     }
 
@@ -178,8 +179,8 @@ public class Search {
      * @param word
      * @return
      */
-    public List<FileApparition> getFileApparitions(String word) {
-        List<FileApparition> fileApparitions = new ArrayList<>();
+    public List<IndexedFile> getFileApparitions(String word) {
+        List<IndexedFile> fileApparitions = new ArrayList<>();
         MongoCollection<Document> collection = MongoConnector.getCollection("RIW", "invertedIndexMap");
         Document indexPointer = collection.find(new Document("token", word)).first();
 
@@ -197,17 +198,17 @@ public class Search {
             int fileCount = indexedFileDocument.getInteger("count");
             double norm = indexedFileDocument.getDouble("norm");
 
-            fileApparitions.add(new FileApparition(fileName, fileCount, norm));
+            fileApparitions.add(new IndexedFile(fileName, fileCount, norm));
         }
         return fileApparitions;
     }
 
 
-    private List<FileApparition> reunion(List<FileApparition> l1, List<FileApparition> l2) {
+    private List<IndexedFile> reunion(List<IndexedFile> l1, List<IndexedFile> l2) {
         if (l1.size() < l2.size()) {
-            List<FileApparition> reunionList = new ArrayList<>(l2);
+            List<IndexedFile> reunionList = new ArrayList<>(l2);
 
-            for (FileApparition element : l1) {
+            for (IndexedFile element : l1) {
                 if (!reunionList.contains(element)) {
                     reunionList.add(element);
                 }
@@ -215,9 +216,9 @@ public class Search {
 
             return reunionList;
         } else {
-            List<FileApparition> reunionList = new ArrayList<>(l1);
+            List<IndexedFile> reunionList = new ArrayList<>(l1);
 
-            for (FileApparition element : l2) {
+            for (IndexedFile element : l2) {
                 if (!reunionList.contains(element)) {
                     reunionList.add(element);
                 }

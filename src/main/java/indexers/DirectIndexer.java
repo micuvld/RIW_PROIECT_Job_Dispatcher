@@ -6,14 +6,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import indexers.map.MappedFile;
 import indexers.reduce.DirectIndexEntry;
-import indexers.reduce.FileApparition;
+import indexers.reduce.IndexedFile;
 import job.JobType;
 import mongo.MongoConnector;
 import utils.Configs;
+import utils.Utils;
 
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -28,10 +30,11 @@ public class DirectIndexer {
     private int fileWordCount = 0;
 
     public String mapFile(Path path) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path.toString()),
-                Charset.forName("UTF-8")));
-        mappedFile = new MappedFile(getRelativeFilePath(path));
+        String absolutePath = Utils.getAbsoluteWorkdir(path.toString());
+        mappedFile = new MappedFile(path.toString());
 
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(absolutePath),
+                Charset.forName("UTF-8")));
         StringBuilder word = new StringBuilder();
 
         int c;
@@ -68,12 +71,7 @@ public class DirectIndexer {
     }
 
     public String generateMapFilePath(Path path) {
-        return INDEX_DIRECTORY_PATH + JobType.MAP.name() + "-" + path.getFileName();
-    }
-
-    public String getRelativeFilePath(Path path) {
-        String stringPath = path.toString();
-        return stringPath.substring(Configs.WORKDIR_PATH.length(), stringPath.length());
+        return Utils.getAbsoluteTempdir(JobType.MAP.name() + "-" + path.getFileName());//INDEX_DIRECTORY_PATH + JobType.MAP.name() + "-" + path.getFileName();
     }
 
     public String writeIndex(Path inPath) throws JsonProcessingException {
@@ -88,14 +86,15 @@ public class DirectIndexer {
             e.printStackTrace();
         }
 
-        MongoConnector.writeToCollection(new FileApparition(getRelativeFilePath(inPath), fileWordCount), "RIW",
+        MongoConnector.writeToCollection(new IndexedFile(inPath.toString(), fileWordCount), "RIW",
                 "indexedFiles");
-        return outPath;
+        return Utils.getRelativeFilePath(Paths.get(outPath));
     }
 
     public void reduceFile(String path) throws IOException {
+        String absolutePath = Utils.getAbsoluteTempdir(path);
         ObjectMapper objectMapper = new ObjectMapper();
-        MappedFile mappedFile = objectMapper.readValue(new File(path), MappedFile.class);
+        MappedFile mappedFile = objectMapper.readValue(new File(absolutePath), MappedFile.class);
 
         Map<String, Collection<Integer>> mapOfWords = mappedFile.getMap();
         String token;

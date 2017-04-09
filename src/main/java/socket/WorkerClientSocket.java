@@ -54,7 +54,8 @@ public class WorkerClientSocket extends AbstractSocket {
             setResultedTargets(worker.getOutputTargets(), job);
             return true;
         } catch (IOException e) {
-            System.out.println("Failed to" + job.getJobType() + " files!");
+            System.out.println("Failed to " + job.getJobType() + " files!");
+            e.printStackTrace();
             return false;
         }
     }

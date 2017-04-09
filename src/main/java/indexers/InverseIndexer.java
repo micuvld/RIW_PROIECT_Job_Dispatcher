@@ -10,6 +10,7 @@ import indexers.reduce.DirectIndexEntry;
 import mongo.MongoConnector;
 import org.bson.Document;
 import utils.Configs;
+import utils.Utils;
 
 import java.io.*;
 import java.util.*;
@@ -34,15 +35,18 @@ public class InverseIndexer {
             sortedDirectIndexEntries.add(objectMapper.readValue(document.toJson(), DirectIndexEntry.class));
         }
 
-        String outFileName = INDEX_FILES_PATH + collectionName.charAt(0) + "Sorted";
-        objectMapper.writeValue(new File(outFileName), sortedDirectIndexEntries);
+        String outFileName = collectionName.charAt(0) + "Sorted";
+        String outFilePath = Utils.getAbsoluteTempdir(outFileName);//INDEX_FILES_PATH + collectionName.charAt(0) + "Sorted";
+        objectMapper.writeValue(new File(outFilePath), sortedDirectIndexEntries);
 
         return outFileName;
     }
 
     public String reduce(String target) throws IOException {
+        String absolutePath = Utils.getAbsoluteTempdir(target);
+
         ObjectMapper objectMapper = new ObjectMapper();
-        DirectIndexEntry[] directIndexEntries = objectMapper.readValue(new File(target), DirectIndexEntry[].class);
+        DirectIndexEntry[] directIndexEntries = objectMapper.readValue(new File(absolutePath), DirectIndexEntry[].class);
         totalNumberOfFiles = calculateTotalNumberOfFiles();
 
         String outCollectionName = directIndexEntries[0].getToken().charAt(0) + "InvertedIndex";

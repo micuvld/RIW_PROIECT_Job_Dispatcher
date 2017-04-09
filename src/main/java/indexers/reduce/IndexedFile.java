@@ -3,13 +3,15 @@ package indexers.reduce;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Created by vlad on 01.04.2017.
+ * Created by vlad on 09.04.2017.
  */
-public class FileApparition {
+public class IndexedFile {
     @JsonProperty("file")
     String file;
     @JsonProperty("count")
     int count;
+    @JsonProperty("norm")
+    double norm;
 
     public String getFile() {
         return file;
@@ -19,15 +21,25 @@ public class FileApparition {
         return count;
     }
 
-    public FileApparition(String file, int count) {
+    public double getNorm() {
+        return norm;
+    }
+
+    public IndexedFile(String file, int count, double norm) {
+        this.file = file;
+        this.count = count;
+        this.norm = norm;
+    }
+
+    public IndexedFile(String file, int count) {
         this.file = file;
         this.count = count;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof FileApparition) {
-            return this.file.equals(((FileApparition) o).file);
+        if (o instanceof IndexedFile) {
+            return this.file.equals(((IndexedFile) o).file);
         } else {
             return false;
         }
