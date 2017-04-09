@@ -3,6 +3,10 @@ package indexers.reduce;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
+ * Encapsulates a document stored in mongo that specifies:
+ *  - the indexed file
+ *  - the total number of words that were mapped out of that file
+ *  - the norm of the file's vector
  * Created by vlad on 09.04.2017.
  */
 public class IndexedFile {

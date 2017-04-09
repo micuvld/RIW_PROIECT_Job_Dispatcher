@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
+ * Loads and provides configured things
  * Created by vlad on 08.04.2017.
  */
 public class Configs {

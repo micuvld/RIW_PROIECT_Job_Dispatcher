@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
+ * Encapsulates a direct index document stored in mongo
  * Created by vlad on 30.03.2017.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -37,6 +38,11 @@ public class DirectIndexEntry implements Comparable{
         this.count = count;
     }
 
+    /**
+     * comparison done by token
+     * @param o
+     * @return
+     */
     @Override
     public int compareTo(Object o) {
         if (o instanceof DirectIndexEntry) {

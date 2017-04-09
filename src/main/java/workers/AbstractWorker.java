@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Workers are used to process jobs of different types
+ * - targetsToProcess represent the input that must pe processed
+ * - outputTargets represent the output files/collections
  * Created by vlad on 07.04.2017.
  */
 public abstract class AbstractWorker implements IWorker {

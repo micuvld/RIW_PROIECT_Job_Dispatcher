@@ -16,15 +16,26 @@ import java.io.*;
 import java.util.*;
 
 /**
+ * Class used by workers to compute the inversed index of a file.
+ * Inversed index is done in two phases: sort and reduce
  * Created by vlad on 08.03.2017.
  */
 public class InverseIndexer {
-    private final String INDEX_FILES_PATH = Configs.TEMPDIR_PATH;
     private long totalNumberOfFiles = 0;
 
     public InverseIndexer() {
     }
 
+    /**
+     * - receives the relative path to the file
+     * - translates it to absolute path
+     * - reads the direct index in a TreeSet,
+     *   sorts it by word and
+     *   writes them in tempFiles
+     * @param collectionName
+     * @return
+     * @throws IOException
+     */
     public String sort(String collectionName) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -36,12 +47,24 @@ public class InverseIndexer {
         }
 
         String outFileName = collectionName.charAt(0) + "Sorted";
-        String outFilePath = Utils.getAbsoluteTempdir(outFileName);//INDEX_FILES_PATH + collectionName.charAt(0) + "Sorted";
+        String outFilePath = Utils.getAbsoluteTempdir(outFileName);
         objectMapper.writeValue(new File(outFilePath), sortedDirectIndexEntries);
 
         return outFileName;
     }
 
+    /**
+     * Reduces a file that contains sorted direct indexes
+     * - reduces the lines containing the same word
+     *   and creates inverted index entries
+     * - calculates idf for the word
+     * - writes inversed index entries to collections like "aDirectIndex",
+     *   where "a" is the first letter of the indexed word
+     * @param target
+     * - file to process
+     * @return
+     * @throws IOException
+     */
     public String reduce(String target) throws IOException {
         String absolutePath = Utils.getAbsoluteTempdir(target);
 

@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Encapsulates a inverted index document stored in mongo
+ *  - it also contains the idf of the indexed word
  * Created by vlad on 01.04.2017.
  */
 public class InvertedIndexEntry {

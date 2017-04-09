@@ -8,7 +8,9 @@ import java.util.*;
 
 /**
  * Used to create specific commands,
- * depending on the command type found in json
+ * depending on the command type found in the json
+ * - the factory is useful, because different commands
+ *   have different processing methods
  * Created by vlad on 29.03.2017.
  */
 public class CommandFactory {
@@ -20,6 +22,13 @@ public class CommandFactory {
         commandClassesMap.put(CommandType.RESPONSE_JOB, ResponseJobCommand.class);
     }
 
+    /**
+     * Instantiates a command according to the type specified in the input
+     * @param command
+     *  - the command as json
+     * @return
+     * @throws IOException
+     */
     public static AbstractCommand createCommand(String command) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode node = objectMapper.readTree(command);

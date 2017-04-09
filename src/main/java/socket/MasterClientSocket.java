@@ -7,6 +7,7 @@ import job.Job;
 import job.JobState;
 import job.JobType;
 import mongo.MongoConnector;
+import monitor.TaskResultsMonitor;
 import org.bson.Document;
 import search.DocumentScore;
 import search.Search;
@@ -20,13 +21,18 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
+ * Represents the Master entity that connects to the job board,
+ * sends commands and processes feedback.
+ * It has three lists that help managing the sent jobs, succeeded jobs and failed jobs.
+ * It uses a TaskResultsMonitor to redispatch the failed jobs
  * Created by vlad on 28.03.2017.
  */
 public class MasterClientSocket extends AbstractSocket {
     private List<Job> sentJobs = new ArrayList<>();
-    private List<Job> failedJobs = new ArrayList<>();
+    private LinkedBlockingQueue<Job> failedJobs = new LinkedBlockingQueue<>();
     private List<Job> succeededJobs = new ArrayList<>();
 
     private boolean processingInProgress = true;
@@ -34,8 +40,21 @@ public class MasterClientSocket extends AbstractSocket {
     public MasterClientSocket(String hostname, int port) {
         super(hostname,port);
         socketType = SocketType.MASTER;
+        new Thread(new TaskResultsMonitor(this)).start();
     }
 
+    public LinkedBlockingQueue<Job> getFailedJobs() {
+        return failedJobs;
+    }
+
+    /**
+     * According to the input option it:
+     *  1. initiates file indexing of the configured folder
+     *  2. serves as search engine
+     *  3. exits...
+     * @param folderPath
+     * @throws IOException
+     */
     public void work(String folderPath) throws IOException {
         MenuOption option = readOption();
         System.out.println(option);
@@ -101,17 +120,33 @@ public class MasterClientSocket extends AbstractSocket {
         return scanner.nextLine();
     }
 
-
+    /**
+     * Waits and reads the feedback for sent jobs
+     * @return
+     * @throws IOException
+     */
     public String getFeedback() throws IOException {
         return readSocketLines();
     }
 
+    /**
+     * Processes the feedback according to the command type
+     * @param command
+     * @throws IOException
+     */
     public void processFeedback(String command) throws IOException {
         System.out.println(command);
         processCommand(command);
     }
 
-    public void processJobResponse(Job job) {
+    /**
+     * Processes the feedback according to the job type
+     * - it usually sends a job that would follow the previous job
+     * - it waits for all the sent jobs when needed and
+     *   it sends a couple of new jobs for the next phase
+     * @param job
+     */
+    public void processCommandResponse(Job job) {
         printJobsStats();
         addJobToMonitoringList(job);
 
@@ -153,10 +188,10 @@ public class MasterClientSocket extends AbstractSocket {
 
     public void sendJob(Job job, JobType jobType) {
         AddJobsCommand command = new AddJobsCommand();
-        Job reduceJob = new Job(job);
+        Job jobToSend = new Job(job);
 
-        reduceJob.setJobType(jobType);
-        command.addJobKeepIndex(reduceJob);
+        jobToSend.setJobType(jobType);
+        command.addJobKeepId(jobToSend);
         try {
             this.writeAsJson(command);
             sentJobs.add(job);
@@ -182,7 +217,7 @@ public class MasterClientSocket extends AbstractSocket {
         AddJobsCommand addJobsCommand = new AddJobsCommand();
         for (String path : pathsList) {
             job = new Job(JobType.MAP, path, JobState.PENDING);
-            addJobsCommand.addJobGenerateIndex(job);
+            addJobsCommand.addJobGenerateId(job);
             sentJobs.add(job);
         }
 
@@ -196,7 +231,7 @@ public class MasterClientSocket extends AbstractSocket {
         AddJobsCommand addJobsCommand = new AddJobsCommand();
         for (String collection : collections) {
             job = new Job(JobType.SORT, collection, JobState.PENDING);
-            addJobsCommand.addJobGenerateIndex(job);
+            addJobsCommand.addJobGenerateId(job);
             sentJobs.add(job);
         }
 
@@ -220,7 +255,7 @@ public class MasterClientSocket extends AbstractSocket {
             Document file = cursor.next();
 
             job = new Job(JobType.CALCULATE_NORMS, file.getString("file"), JobState.PENDING);
-            addJobsCommand.addJobGenerateIndex(job);
+            addJobsCommand.addJobGenerateId(job);
             sentJobs.add(job);
         }
 

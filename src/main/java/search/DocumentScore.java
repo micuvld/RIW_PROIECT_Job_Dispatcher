@@ -1,6 +1,7 @@
 package search;
 
 /**
+ * Used to hold the scores of the searched documents
  * Created by vlad on 02.04.2017.
  */
 public class DocumentScore implements Comparable{

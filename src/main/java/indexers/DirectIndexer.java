@@ -9,7 +9,6 @@ import indexers.reduce.DirectIndexEntry;
 import indexers.reduce.IndexedFile;
 import job.JobType;
 import mongo.MongoConnector;
-import utils.Configs;
 import utils.Utils;
 
 import java.io.*;
@@ -21,14 +20,25 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Class used by workers to compute the direct index of a file.
+ * Direct index is done in two phases: map and reduce
  * Created by vlad on 22.02.2017.
  */
 public class DirectIndexer {
-    private final String INDEX_DIRECTORY_PATH = Configs.TEMPDIR_PATH;
     private MappedFile mappedFile;
 
-    private int fileWordCount = 0;
+    private int mappedWordsCount = 0;
 
+    /**
+     * - receives the relative path to the file
+     * - translates it to absolute path
+     * - parses the file and maps the words that pass the WordSieve
+     * @param path
+     *  - relative path to the file to map
+     * @return
+     *  - path to the file that contains the mapped words
+     * @throws IOException
+     */
     public String mapFile(Path path) throws IOException {
         String absolutePath = Utils.getAbsoluteWorkdir(path.toString());
         mappedFile = new MappedFile(path.toString());
@@ -53,10 +63,22 @@ public class DirectIndexer {
         return writeIndex(path);
     }
 
+    /**
+     * Only validates alphabetic characters
+     * @param c
+     * @return
+     *  - true if the character is alphabetic
+     */
     public boolean isValid(char c) {
         return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
     }
 
+    /**
+     * - passes the word through a WordSieve
+     * - maps the word if the word passed the conditions
+     * - increments the total number of mapped words
+     * @param word
+     */
     private void mapWord(String word) {
         if (!WordSieve.isException(word)) {
             if (WordSieve.isStopWord(word)) {
@@ -67,13 +89,20 @@ public class DirectIndexer {
         }
 
         mappedFile.mapWord(word);
-        fileWordCount++;
+        mappedWordsCount++;
     }
 
     public String generateMapFilePath(Path path) {
-        return Utils.getAbsoluteTempdir(JobType.MAP.name() + "-" + path.getFileName());//INDEX_DIRECTORY_PATH + JobType.MAP.name() + "-" + path.getFileName();
+        return Utils.getAbsoluteTempdir(JobType.MAP.name() + "-" + path.getFileName());
     }
 
+    /**
+     * Writes the mapped words as json into a temp file
+     * @param inPath
+     * @return
+     * - - path to the file that was written
+     * @throws JsonProcessingException
+     */
     public String writeIndex(Path inPath) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         String outPath = generateMapFilePath(inPath);
@@ -86,11 +115,19 @@ public class DirectIndexer {
             e.printStackTrace();
         }
 
-        MongoConnector.writeToCollection(new IndexedFile(inPath.toString(), fileWordCount), "RIW",
+        MongoConnector.writeToCollection(new IndexedFile(inPath.toString(), mappedWordsCount), "RIW",
                 "indexedFiles");
         return Utils.getRelativeFilePath(Paths.get(outPath));
     }
 
+    /**
+     * Reduces a file that contains mapped words
+     * - sums the array of "1" for each mapped word
+     * - writes direct index entries to collections like "aDirectIndex",
+     *   where "a" is the first letter of the indexed word
+     * @param path
+     * @throws IOException
+     */
     public void reduceFile(String path) throws IOException {
         String absolutePath = Utils.getAbsoluteTempdir(path);
         ObjectMapper objectMapper = new ObjectMapper();

@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * Classed used by MasterServerSocket to manage responses
- * sent from Workers to Master
+ * Class used by MasterServerSocket to manage responses
+ * sent from workers to master.
  * Created by vlad on 07.04.2017.
  */
 public class ResponseCommandsMonitor implements Runnable{
@@ -20,6 +20,10 @@ public class ResponseCommandsMonitor implements Runnable{
         this.masterSocket = masterSocket;
     }
 
+    /**
+     * Attempts to read from the queue and
+     * redirects the commands to master
+     */
     @Override
     public void run() {
         while(true) {

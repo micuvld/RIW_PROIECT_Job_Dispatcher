@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
+ * Parses the directory and returns the list of all "*.txt" file paths
  * Created by vlad on 23.02.2017.
  */
 public class DirectoryParser {

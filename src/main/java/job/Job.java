@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Class used to specify workers what to process and the target of their process
+ * It is passed to the workers by a AbstractCommand object
  * Created by vlad on 27.03.2017.
  */
 public class Job {

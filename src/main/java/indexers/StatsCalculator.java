@@ -10,6 +10,7 @@ import java.util.List;
 import static com.mongodb.client.model.Filters.eq;
 
 /**
+ * Class used to compute idf and vector norms
  * Created by vlad on 06.04.2017.
  */
 public class StatsCalculator {
@@ -32,6 +33,16 @@ public class StatsCalculator {
         }
     }
 
+    /**
+     * - gets the total number of mapped words of the target file
+     * - gets the direct index collections and searches for words
+     *   that were mapped out of the target file
+     * - for each valid direct index entry, searches the corresponding inversed index
+     *   and calculates tf * idf
+     * - writes the norm to the target file entry in mongo
+     * @param targetFile
+     *  - the file that should have his vector's norm computed
+     */
     public void calculateNorm(String targetFile) {
         Document indexedFile = indexedFilesCollection.find(new Document("file", targetFile)).first();
         int fileCount = indexedFile.getInteger("count");
@@ -79,6 +90,12 @@ public class StatsCalculator {
         indexedFilesCollection.updateOne(eq("file", fileName), new Document("$set", normDocument));
     }
 
+    /**
+     * Gets the computed idf stored in the inversed index, in mongo
+     *  - if there is no entry found, the idf will equal 0
+     * @param token
+     * @return
+     */
     public static double getIdf(String token) {
         Document invertedIndexCollectionEntry = invertedIndexMapCollection.find(eq("token", token)).first();
         if (invertedIndexCollectionEntry == null) {

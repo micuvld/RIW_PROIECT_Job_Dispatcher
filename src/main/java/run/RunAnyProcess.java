@@ -8,6 +8,7 @@ import utils.Configs;
 import java.io.IOException;
 
 /**
+ * Main classed used to run the app
  * Created by vlad on 08.04.2017.
  */
 public class RunAnyProcess {

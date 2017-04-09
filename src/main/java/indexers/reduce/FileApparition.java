@@ -3,6 +3,7 @@ package indexers.reduce;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
+ * Encapsulates a part of an inversed index document - an element of the apparitions array
  * Created by vlad on 01.04.2017.
  */
 public class FileApparition {

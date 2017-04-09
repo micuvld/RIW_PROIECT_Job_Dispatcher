@@ -15,6 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Represents the Job Board entity that manages the communication
+ * between master and workers (through commands)
+ * It stores the jobs sent by master in a job queue (JobBoard)
  * Created by vlad on 28.03.2017.
  */
 public class JobBoardSocket{
@@ -27,6 +30,9 @@ public class JobBoardSocket{
 
     private JobBoard jobBoard;
 
+    /**
+     * Instantiates the socket and the job board
+     */
     public JobBoardSocket() {
         try {
             port = Integer.parseInt(Configs.JOB_BOARD_PORT);
@@ -39,6 +45,9 @@ public class JobBoardSocket{
         }
     }
 
+    /**
+     * Accept clients and create a new thread for each client
+     */
     public void work() {
         try {
             while (true) {
@@ -52,6 +61,12 @@ public class JobBoardSocket{
         }
     }
 
+    /**
+     * Creates a new thread for a client socket,
+     * according to the client type
+     * @param clientSocket
+     * @throws IOException
+     */
     public void addClient(Socket clientSocket) throws IOException {
         BufferedReader socketReader = new BufferedReader(
                 new InputStreamReader(clientSocket.getInputStream(), "UTF-8"));

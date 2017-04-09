@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Command that is used to push jobs into the job queue
  * Created by vlad on 28.03.2017.
  */
 public class AddJobsCommand extends AbstractCommand{
@@ -43,26 +44,42 @@ public class AddJobsCommand extends AbstractCommand{
         this.jobList = jobList;
     }
 
-    public Job addJobGenerateIndex(JobType jobType, String target) {
+    public Job addJobGenerateId(JobType jobType, String target) {
         Job job = new Job(nextJobId++, jobType, target);
         jobList.add(job);
         System.out.println(job.getJobId());
         return job;
     }
 
-    public Job addJobGenerateIndex(Job job) {
+    /**
+     * adds a job with a new id
+     * @param job
+     * @return
+     */
+    public Job addJobGenerateId(Job job) {
         job.setJobId(nextJobId++);
         jobList.add(job);
         System.out.println(job.getJobId());
         return job;
     }
 
-    public Job addJobKeepIndex(Job job) {
+    /**
+     * adds a job, keeping it's id
+     * @param job
+     * @return
+     */
+    public Job addJobKeepId(Job job) {
         jobList.add(job);
         System.out.println(job.getJobId());
         return job;
     }
 
+    /**
+     * If received by MasterServerSocket, it pushes the jobs into the job queue
+     * @param socket
+     *  - the socket that received the command
+     * @throws UnableToProcessCommandException
+     */
     @Override
     public void processCommand(ISocket socket) throws UnableToProcessCommandException {
         if (socket instanceof MasterServerSocket) {

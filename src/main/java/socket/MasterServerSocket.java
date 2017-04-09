@@ -3,12 +3,16 @@ package socket;
 import board.JobBoard;
 import monitor.ResponseCommandsMonitor;
 import commands.*;
+import monitor.TaskResultsMonitor;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
+ * Used by the job board to communicate with the master.
+ * Uses a blocking queue and a monitor to prevent concurrent writing
+ * by worker sockets.
  * Created by vlad on 28.03.2017.
  */
 public class MasterServerSocket extends AbstractSocket implements Runnable{
@@ -29,6 +33,9 @@ public class MasterServerSocket extends AbstractSocket implements Runnable{
         new Thread(new ResponseCommandsMonitor(responseCommands, this)).start();
     }
 
+    /**
+     * Processes commands received from master
+     */
     @SuppressWarnings("Duplicates")
     @Override
     public void run() {

@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.net.Socket;
 
 /**
+ * Used by the job board to communicate with a worker.
+ * It sends jobs and redirects responses to master
  * Created by vlad on 28.03.2017.
  */
 public class WorkerServerSocket extends AbstractSocket implements Runnable{
@@ -42,6 +44,10 @@ public class WorkerServerSocket extends AbstractSocket implements Runnable{
         }
     }
 
+    /**
+     * Redirect is done by pushing the command in the master socket's response queue
+     * @param command
+     */
     public void redirectToMaster(AbstractCommand command) {
         try {
             masterSocket.pushResponseCommand(command);

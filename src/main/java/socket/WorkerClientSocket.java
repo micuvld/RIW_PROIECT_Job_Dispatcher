@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.util.List;
 
 /**
+ * Represents the Worker entity that connects to the job board,
+ * requests jobs, processes the jobs and returns a response
  * Created by vlad on 28.03.2017.
  */
 public class WorkerClientSocket extends AbstractSocket {
@@ -19,6 +21,12 @@ public class WorkerClientSocket extends AbstractSocket {
         socketType = SocketType.WORKER;
     }
 
+    /**
+     * - requests a job
+     * - processes the job
+     * - sends a response
+     * @throws IOException
+     */
     public void work() throws IOException {
         while(true) {
             System.out.println("Requesting job...");
@@ -42,6 +50,11 @@ public class WorkerClientSocket extends AbstractSocket {
         return objectMapper.readValue(readSocketLines(), Job.class);
     }
 
+    /**
+     * Creates a worker that will process the job
+     * @param job
+     * @return
+     */
     private boolean processJob(Job job) {
         List<String> targetsToProcess = job.getTargets();
         AbstractWorker worker = WorkerFactory.instantiateWorker(

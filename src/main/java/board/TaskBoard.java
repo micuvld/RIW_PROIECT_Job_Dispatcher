@@ -6,7 +6,9 @@ import job.Job;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- *
+ * Class that manages the jobs queue
+ *  - it uses a LinkedBlockingQueue, so it manages multi-threading operations
+ *  - this is where the jobs for workers are hold
  * Created by vlad on 27.03.2017.
  */
 public class TaskBoard implements JobBoard {

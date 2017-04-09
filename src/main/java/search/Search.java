@@ -26,6 +26,9 @@ public class Search {
 
     /**
      * Searches using tf-idf
+     * - fetches the files of interest using boolean search
+     * - calculates the score of each document, relative to the query
+     * - returns a list of documents, sorted by score
      * @return
      *  List of files, ordered by rank
      */
@@ -101,6 +104,11 @@ public class Search {
         return tokens;
     }
 
+    /**
+     * If the token passes the word sieve, it is added to the tokens list
+     * @param token
+     * @param tokens
+     */
     private void addToken(String token, List<String> tokens) {
         if (!WordSieve.isException(token)) {
             if (WordSieve.isStopWord(token)) {
@@ -123,7 +131,6 @@ public class Search {
         return scores;
     }
 
-
     private double calculateDocumentWeight(String term, IndexedFile currentFile) {
         return calculateTf(term, currentFile) * StatsCalculator.getIdf(term);
     }
@@ -132,6 +139,16 @@ public class Search {
         return calculateQueryTf(term, queryTokens) * StatsCalculator.getIdf(term);
     }
 
+    /**
+     * - gets the direct index for the token
+     * - computes the tf
+     * - if the word is not found in the direct index map, the tf is 0
+     * @param token
+     * @param indexedFile
+     *  - mongo indexed file entry (contains the number of all mapped words out of the file)
+     * @return
+     *  - tf of the token
+     */
     private double calculateTf(String token, IndexedFile indexedFile) {
         MongoCollection<Document> directIndexMap = MongoConnector.getCollection("RIW", "directIndexMap");
         Document directIndexMapEntry =  directIndexMap.find(new Document("token", token)).first();

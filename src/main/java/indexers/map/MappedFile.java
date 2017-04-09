@@ -12,6 +12,9 @@ import java.util.Map;
 
 
 /**
+ * Encapsulates the mapped words of a file (after the mapping phase)
+ *  - the indexList contains an array of "1" for each mapped word
+ *  - the indexList will be used at the reduce phase to create the direct index
  * Created by vlad on 23.03.2017.
  */
 public class MappedFile {

@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Class used to condition the words that are mapped out of files
+ * and the words from a search query
  * Created by vlad on 06.04.2017.
  */
 public class WordSieve {
@@ -37,6 +39,10 @@ public class WordSieve {
         return porter.stripAffixes(word);
     }
 
+    /**
+     * Reads and parses the exception words and stop words
+     *  - populates the corresponding lists
+     */
     private static void populateExceptionAndStopLists() {
         BufferedReader bufferedReader = null;
         String currentLine;
