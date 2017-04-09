@@ -14,7 +14,7 @@ public class Configs {
     public static String WORKDIR_PATH;
     public static String TEMPDIR_PATH;
 
-    public static String MONGO_HOSTNAME;
+    public static String MONGO_IP_ADDRESS;
     public static String MONGO_PORT;
 
     public static String EXCEPTIONS_LIST_PATH;
@@ -35,7 +35,7 @@ public class Configs {
             JOB_BOARD_PORT = prop.getProperty("job_board_port");
             WORKDIR_PATH = prop.getProperty("workdir_path");
             TEMPDIR_PATH = prop.getProperty("tempdir_path");
-            MONGO_HOSTNAME = prop.getProperty("mongo_hostname");
+            MONGO_IP_ADDRESS = prop.getProperty("mongo_ip_address");
             MONGO_PORT = prop.getProperty("mongo_port");
             EXCEPTIONS_LIST_PATH = prop.getProperty("exceptions_list_path");
             STOP_WORDS_LIST_PATH = prop.getProperty("stop_words_list_path");

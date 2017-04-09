@@ -2,12 +2,10 @@ package mongo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
-import com.mongodb.client.model.CreateCollectionOptions;
 import org.bson.Document;
 import utils.Configs;
 
@@ -24,7 +22,7 @@ public class MongoConnector {
 
     public static MongoClient getClient() {
         if (mongoClient == null) {
-            mongoClient = new MongoClient(Configs.MONGO_HOSTNAME, Integer.parseInt(Configs.MONGO_PORT));
+            mongoClient = new MongoClient(Configs.MONGO_IP_ADDRESS, Integer.parseInt(Configs.MONGO_PORT));
         }
 
         return mongoClient;
